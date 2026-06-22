@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>単語帳アプリ</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2962FF">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    --primary: #2962FF;
+    --primary-dark: #1c46c7;
+    --bg: #f5f6fa;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --muted: #767887;
+    --danger: #e23744;
+    --success: #1aab55;
+    --border: #e3e5ec;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  #app {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-size: 1.4rem;
+    margin: 8px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    margin-bottom: 16px;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 14px 8px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .stat .num { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+  .stat .label { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+
+  button {
+    font-family: inherit;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.05s ease, opacity 0.15s ease;
+  }
+  button:active { transform: scale(0.98); }
+  .btn-primary { background: var(--primary); color: white; width: 100%; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-success { background: var(--success); color: white; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+  .btn-secondary { background: #eef0f6; color: var(--text); }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  input[type=text], input[type=email], input[type=password], input[type=number] {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    font-size: 1rem;
+    margin-bottom: 10px;
+    font-family: inherit;
+  }
+  label { font-size: 0.85rem; color: var(--muted); display: block; margin-bottom: 4px; }
+
+  .question-card {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .question-text {
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  .answer-text {
+    margin-top: 18px;
+    font-size: 1.15rem;
+    color: var(--primary-dark);
+    background: #eef2ff;
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.2s ease;
+  }
+  .caption { font-size: 0.8rem; color: var(--muted); margin-bottom: 14px; }
+  .center { text-align: center; }
+  .mb8 { margin-bottom: 8px; }
+  .mb16 { margin-bottom: 16px; }
+  .link-btn {
+    background: none; color: var(--primary); text-decoration: underline;
+    padding: 8px; font-weight: 500; font-size: 0.9rem;
+  }
+  .error-msg { color: var(--danger); font-size: 0.85rem; margin-bottom: 10px; }
+  .success-msg { color: var(--success); font-size: 0.85rem; margin-bottom: 10px; }
+  .offline-badge {
+    display: inline-block;
+    background: #fff3cd;
+    color: #8a6500;
+    font-size: 0.75rem;
+    padding: 3px 9px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+  details summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
+  .icon { font-size: 1.5rem; }
+  .spinner {
+    border: 3px solid var(--border);
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    width: 28px; height: 28px;
+    animation: spin 0.8s linear infinite;
+    margin: 30px auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="spinner"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
