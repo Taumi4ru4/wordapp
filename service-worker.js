@@ -2,7 +2,7 @@
 // オフラインでもアプリが開けるようにします。
 // ※ データ自体の同期はFirestoreのオフライン機能が別途担当します。
 
-const CACHE_NAME = "tangocho-shell-v1";
+const CACHE_NAME = "tangocho-shell-v3";
 
 const APP_SHELL = [
   "./",
