@@ -15,7 +15,7 @@ db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
 
 // ---------- デッキ（単語帳）の定義 ----------
 const DECK_DEFS = [
-  { id: "kaki", label: "✍️ 書きの単語" },
+  { id: "kaki", label: "✍️ 書き" },
   { id: "yomi", label: "📖 読み" },
   { id: "gazou", label: "🖼️ 画像" },
 ];
@@ -147,6 +147,15 @@ function weightedRandomIndex(n) {
   return n - 1;
 }
 
+// Fisher-Yatesシャッフル(配列を直接並び替える)
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 // ---------- 学習セッションのロジック ----------
 function startSession() {
   const d = deck();
@@ -162,6 +171,10 @@ function startSession() {
   const queue = [];
   for (let i = 0; i < d.ato.length; i++) {
     if (d.ato[i] === 0) queue.push(i);
+  }
+  // 「画像」デッキは、出題する単語は変えずに最初の一周の順番だけランダムにする
+  if (currentDeckId === "gazou") {
+    shuffleArray(queue);
   }
   session = { queue, pos: 0, mistakes: [], mistakePos: 0, showAnswer: false };
   phase = "review";
